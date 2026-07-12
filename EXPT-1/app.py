@@ -58,7 +58,7 @@ def generate_metrics_graph(x, y, m, c, mae, mse, rmse, r_squared):
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
     
-    ax1.scatter(x_arr, y_arr, color='#8b5cf6', edgecolor='#6d28d9', s=55, alpha=0.75, label='Actual Data Points')
+    ax1.scatter(x_arr, y_arr, color='#facc15', edgecolor='#ca8a04', s=55, alpha=0.75, label='Actual Data Points')
     
     min_x = x_arr.min()
     max_x = x_arr.max()
@@ -68,7 +68,7 @@ def generate_metrics_graph(x, y, m, c, mae, mse, rmse, r_squared):
     
     c_sign = '+' if c >= 0 else '-'
     line_label = f'Regression Line\n$y = {m:.4f}x {c_sign} {abs(c):.4f}$'
-    ax1.plot(x_line, y_line, color='#3b82f6', linestyle='-', linewidth=2.2, label=line_label)
+    ax1.plot(x_line, y_line, color='brown', linestyle='-', linewidth=2.2, label=line_label)
     
     ax1.set_xlabel('X Values', fontsize=11, fontweight='bold', labelpad=8)
     ax1.set_ylabel('Y Values', fontsize=11, fontweight='bold', labelpad=8)
