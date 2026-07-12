@@ -62,7 +62,6 @@
         btnReset.addEventListener('click', resetAll);
         btnVisualise.addEventListener('click', visualiseResults);
 
-        // Reset state on input changes so we recompute if inputs change
         xInput.addEventListener('input', () => { calculatedState = null; });
         yInput.addEventListener('input', () => { calculatedState = null; });
 
@@ -149,7 +148,6 @@
                     }
                 }
 
-                // Fallback to local JS calculation
                 metricsGraphContainer.style.display = 'none';
                 if (showGraph === true) {
                     metricsGraphFallback.style.display = 'block';

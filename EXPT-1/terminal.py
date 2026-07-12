@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# ---------------- Linear Regression ----------------
 def calculate_linear_regression(x, y):
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -19,7 +18,6 @@ def calculate_linear_regression(x, y):
     return m, c
 
 
-# ---------------- Error Metrics ----------------
 def calculate_metrics(y_true, y_pred):
     y_true = np.asarray(y_true, dtype=float)
     y_pred = np.asarray(y_pred, dtype=float)
@@ -39,14 +37,12 @@ def calculate_metrics(y_true, y_pred):
     return mae, mse, rmse, r_squared
 
 
-# ---------------- Graph ----------------
 def show_graph(x, y, m, c, mae, mse, rmse, r2):
     x = np.asarray(x)
     y = np.asarray(y)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5))
 
-    # Regression Graph
     ax1.scatter(x, y, color="blue", label="Actual Data")
 
     x_line = np.linspace(min(x), max(x), 100)
@@ -66,7 +62,6 @@ def show_graph(x, y, m, c, mae, mse, rmse, r2):
     ax1.grid(True)
     ax1.legend()
 
-    # Metrics Graph
     labels = ["MSE", "MAE", "RMSE", "R²"]
     values = [mse, mae, rmse, r2]
 
@@ -84,7 +79,6 @@ def show_graph(x, y, m, c, mae, mse, rmse, r2):
     plt.show()
 
 
-# ---------------- Main Program ----------------
 x = np.array(list(map(float, input("Enter X values (comma-separated): ").split(","))))
 y = np.array(list(map(float, input("Enter Y values (comma-separated): ").split(","))))
 
@@ -94,7 +88,6 @@ y_pred = m * x + c
 
 mae, mse, rmse, r2 = calculate_metrics(y, y_pred)
 
-# ---------------- Output ----------------
 print("\n------ Linear Regression ------")
 
 if c >= 0:
@@ -105,11 +98,9 @@ else:
 print("\nPredicted Y Values:")
 print(np.round(y_pred, 4))
 
-print("\n------ Error Metrics ------")
 print(f"MAE  = {mae:.4f}")
 print(f"MSE  = {mse:.4f}")
 print(f"RMSE = {rmse:.4f}")
 print(f"R²   = {r2:.4f}")
 
-# ---------------- Plot ----------------
-show_graph(x, y, m, c, mae, mse, rmse, r2)
+show_graph(x, y, m, c, mae, mse, rmse, r2)
