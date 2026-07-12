@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Regression Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Regression Calculator</h1>
+    
+    <div>
+        <label for="xInput">X Values:</label><br>
+        <input type="text" id="xInput" size="50"><br><br>
+        
+        <label for="yInput">Y Values:</label><br>
+        <input type="text" id="yInput" size="50"><br><br>
+        
+        <button id="btnSubmit">Submit</button>
+        <button id="btnReset">Reset</button>
+        <button id="btnVisualise">Visualise</button>
+    </div>
+    
+    <div id="errorDisplay" style="color: red; margin-top: 10px; font-weight: bold;"></div>
+    
+    <h2>Results</h2>
+    <div>
+        <p><strong>Equation:</strong> <span id="eqDisplay"></span></p>
+        <p><strong>Mean Absolute Error (MAE):</strong> <span id="maeVal"></span></p>
+        <p><strong>Mean Squared Error (MSE):</strong> <span id="mseVal"></span></p>
+        <p><strong>Root Mean Squared Error (RMSE):</strong> <span id="rmseVal"></span></p>
+        <p><strong>R-squared (R²):</strong> <span id="r2Val"></span></p>
+    </div>
+    
+    <h2>Visualization</h2>
+    <div style="width: 600px; height: 400px;">
+        <canvas id="regressionChart"></canvas>
+    </div>
+
+    <script>
+        const xInput = document.getElementById('xInput');
+        const yInput = document.getElementById('yInput');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnReset = document.getElementById('btnReset');
+        const btnVisualise = document.getElementById('btnVisualise');
+        const errorDisplay = document.getElementById('errorDisplay');
+
+        const eqDisplay = document.getElementById('eqDisplay');
+        const maeVal = document.getElementById('maeVal');
+        const mseVal = document.getElementById('mseVal');
+        const rmseVal = document.getElementById('rmseVal');
+        const r2Val = document.getElementById('r2Val');
+
+        let myChart = null;
+        let calculatedState = null;
+
+        btnSubmit.addEventListener('click', calculateResults);
+        btnReset.addEventListener('click', resetAll);
+        btnVisualise.addEventListener('click', visualiseResults);
+
+        function parseInputs() {
+            errorDisplay.textContent = '';
+            
+            const rawX = xInput.value.trim();
+            const rawY = yInput.value.trim();
+
+            if (!rawX || !rawY) {
+                throw new Error("Please enter both X and Y values.");
+            }
+
+            const x = rawX.split(',').map(s => s.trim()).filter(s => s !== '').map(Number);
+            const y = rawY.split(',').map(s => s.trim()).filter(s => s !== '').map(Number);
+
+            if (x.some(isNaN) || y.some(isNaN)) {
+                throw new Error("Inputs must contain only valid numbers separated by commas.");
+            }
+
+            if (x.length !== y.length) {
+                throw new Error(`Length mismatch: X has ${x.length} values, Y has ${y.length} values.`);
+            }
+
+            if (x.length === 0) {
+                throw new Error("Arrays cannot be empty.");
+            }
+
+            return { x, y };
+        }
+
+        async function calculateResults() {
+            try {
+                const { x, y } = parseInputs();
+
+                if (window.location.protocol.startsWith('http')) {
+                    try {
+                        const response = await fetch('/calculate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ x, y })
+                        });
+
+                        const data = await response.json();
+                        if (data.status === 'error') {
+                            throw new Error(data.message);
+                        }
+
+                        const m = data.m;
+                        const c = data.c;
+                        const cSign = c >= 0 ? '+' : '-';
+                        eqDisplay.textContent = `y = ${m.toFixed(4)}x ${cSign} ${Math.abs(c).toFixed(4)}`;
+                        maeVal.textContent = data.mae.toFixed(6);
+                        mseVal.textContent = data.mse.toFixed(6);
+                        rmseVal.textContent = data.rmse.toFixed(6);
+                        r2Val.textContent = isFinite(data.r_squared) ? data.r_squared.toFixed(6) : "—";
+
+                        calculatedState = { x, y, m, c };
+                        return;
+                    } catch (e) {
+                        console.warn("Python backend request failed, falling back to local JS calculation:", e);
+                    }
+                }
+
+                const n = x.length;
+                const meanX = x.reduce((a, b) => a + b, 0) / n;
+                const meanY = y.reduce((a, b) => a + b, 0) / n;
+
+                let numerator = 0;
+                let denominator = 0;
+                for (let i = 0; i < n; i++) {
+                    numerator += (x[i] - meanX) * (y[i] - meanY);
+                    denominator += Math.pow(x[i] - meanX, 2);
+                }
+
+                if (denominator === 0) {
+                    throw new Error("Cannot calculate regression slope (all X values are identical).");
+                }
+
+                const m = numerator / denominator;
+                const c = meanY - (m * meanX);
+                const yPred = x.map(val => m * val + c);
+                
+                let absErrSum = 0;
+                let sqErrSum = 0;
+                let totVarSum = 0;
+
+                for (let i = 0; i < n; i++) {
+                    const diff = y[i] - yPred[i];
+                    absErrSum += Math.abs(diff);
+                    sqErrSum += Math.pow(diff, 2);
+                    totVarSum += Math.pow(y[i] - meanY, 2);
+                }
+
+                const mae = absErrSum / n;
+                const mse = sqErrSum / n;
+                const rmse = Math.sqrt(mse);
+                
+                let r2;
+                if (totVarSum === 0) {
+                    r2 = sqErrSum === 0 ? 1.0 : -Infinity;
+                } else {
+                    r2 = 1.0 - (sqErrSum / totVarSum);
+                }
+
+                const cSign = c >= 0 ? '+' : '-';
+                eqDisplay.textContent = `y = ${m.toFixed(4)}x ${cSign} ${Math.abs(c).toFixed(4)} (Computed by JS)`;
+                maeVal.textContent = mae.toFixed(6);
+                mseVal.textContent = mse.toFixed(6);
+                rmseVal.textContent = rmse.toFixed(6);
+                r2Val.textContent = isFinite(r2) ? r2.toFixed(6) : "—";
+
+                calculatedState = { x, y, m, c };
+
+            } catch (err) {
+                errorDisplay.textContent = err.message;
+                clearResultsDisplay();
+            }
+        }
+
+        function visualiseResults() {
+            try {
+                if (!calculatedState) {
+                    calculateResults();
+                }
+                
+                if (calculatedState) {
+                    const { x, y, m, c } = calculatedState;
+                    renderChart(x, y, m, c);
+                }
+            } catch (err) {
+                errorDisplay.textContent = err.message;
+            }
+        }
+
+        function renderChart(x, y, m, c) {
+            const scatterData = x.map((val, idx) => ({ x: val, y: y[idx] }));
+            
+            const minX = Math.min(...x);
+            const maxX = Math.max(...x);
+            const padding = (maxX - minX) * 0.1 || 1.0;
+            
+            const lineStart = { x: minX - padding, y: m * (minX - padding) + c };
+            const lineEnd = { x: maxX + padding, y: m * (maxX + padding) + c };
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            const ctx = document.getElementById('regressionChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Actual Data Points',
+                            data: scatterData,
+                            backgroundColor: '#4CAF50',
+                            borderColor: '#FF9800',
+                            pointRadius: 6,
+                            order: 2
+                        },
+                        {
+                            label: 'Regression Line (y = mx + c)',
+                            data: [lineStart, lineEnd],
+                            type: 'line',
+                            borderColor: 'blue',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'X' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Y' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function clearResultsDisplay() {
+            eqDisplay.textContent = '—';
+            maeVal.textContent = '—';
+            mseVal.textContent = '—';
+            rmseVal.textContent = '—';
+            r2Val.textContent = '—';
+            calculatedState = null;
+        }
+
+        function resetAll() {
+            xInput.value = '';
+            yInput.value = '';
+            errorDisplay.textContent = '';
+            clearResultsDisplay();
+            if (myChart) {
+                myChart.destroy();
+                myChart = null;
+            }
+        }
+    </script>
+</body>
+</html>
