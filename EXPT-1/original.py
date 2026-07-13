@@ -103,4 +103,4 @@ print(f"MSE  = {mse:.4f}")
 print(f"RMSE = {rmse:.4f}")
 print(f"R²   = {r2:.4f}")
 
-show_graph(x, y, m, c, mae, mse, rmse, r2)
+show_graph(x, y, m, c, mae, mse, rmse, r2)
