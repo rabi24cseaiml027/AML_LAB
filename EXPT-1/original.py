@@ -43,7 +43,7 @@ def show_graph(x, y, m, c, mae, mse, rmse, r2):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5))
 
-    ax1.scatter(x, y, color="blue", label="Actual Data")
+    ax1.scatter(x, y, color="#facc15", edgecolor="#ca8a04", label="Actual Data")
 
     x_line = np.linspace(min(x), max(x), 100)
     y_line = m * x_line + c
@@ -52,20 +52,20 @@ def show_graph(x, y, m, c, mae, mse, rmse, r2):
     ax1.plot(
         x_line,
         y_line,
-        color="red",
+        color="brown",
         label=f"y = {m:.4f}x {sign} {abs(c):.4f}",
     )
 
-    ax1.set_title("Linear Regression")
-    ax1.set_xlabel("X")
-    ax1.set_ylabel("Y")
+    ax1.set_title("Linear Regression", fontweight="bold")
+    ax1.set_xlabel("X", fontweight="bold")
+    ax1.set_ylabel("Y", fontweight="bold")
     ax1.grid(True)
-    ax1.legend()
+    ax1.legend(facecolor="#ffffff", edgecolor="#e5e7eb")
 
     labels = ["MSE", "MAE", "RMSE", "R²"]
     values = [mse, mae, rmse, r2]
 
-    ax2.plot(labels, values, marker="o")
+    ax2.scatter(labels, values, marker="o", color="#1f77b4")
 
     for i, value in enumerate(values):
         ax2.text(i, value, f"{value:.4f}")
