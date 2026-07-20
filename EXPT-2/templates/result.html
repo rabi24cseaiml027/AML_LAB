@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Results</title></head>
+<body style="font-family: Arial, sans-serif; margin: 40px;">
+
+    <h2>Final Regression Equation</h2>
+    <div style="background-color: #f1f5f9; padding: 15px; font-family: monospace; font-size: 16px;">
+        {{ equation }}
+    </div>
+    
+    <h3>Intercept & Slopes</h3>
+    <p>Intercept (b0): <b>{{ intercept }}</b></p>
+    {% for name, slope in slopes.items() %}
+        <p>Slope for {{ name }}: <b>{{ slope }}</b></p>
+    {% endfor %}
+
+    <hr style="margin: 30px 0;">
+
+    <h3>Enter Sample Data for Prediction</h3>
+    <form action="/predict" method="POST">
+        <!-- Hidden elements pass data to engine securely without complex session tracking -->
+        <input type="hidden" name="y_name" value="{{ y_name }}">
+        <input type="hidden" name="y_input" value="{{ y_input }}">
+        <input type="hidden" name="x_raw_str" value="{{ x_raw_str }}">
+
+        {% for name in x_names %}
+            <p>
+                <label>Value for <b>{{ name }}</b> (x{{ loop.index }}):</label><br>
+                <input type="number" step="any" name="pred_x_{{ loop.index0 }}" required style="padding: 5px;">
+            </p>
+        {% endfor %}
+        <button type="submit">Predict {{ y_name }}</button>
+    </form>
+
+    <hr style="margin: 30px 0;">
+
+    <h3>Visualizations</h3>
+    <img src="data:image/png;base64,{{ plot1 }}" alt="Accuracy Plot"><br><br>
+    <img src="data:image/png;base64,{{ plot2 }}" alt="Metrics Plot"><br><br>
+
+    <a href="/">Restart Calculator</a>
+</body>
+</html>

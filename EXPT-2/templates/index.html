@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multiple Linear Regression</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .row-container { display: flex; gap: 15px; margin-bottom: 12px; align-items: center; }
+        .input-box { padding: 6px; font-size: 14px; }
+        .name-field { width: 180px; }
+        .val-field { width: 350px; }
+        .section-title { margin-top: 25px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        button { padding: 6px 12px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Multiple Linear Regression Calculator</h2>
+    
+    <form action="/calculate" method="POST">
+        <h3 class="section-title">Target Variable (y)</h3>
+        <div class="row-container">
+            <input type="text" name="y_name" class="input-box name-field" placeholder="Target Name" required>
+            <input type="text" name="y_values" class="input-box val-field" placeholder="Values" required>
+        </div>
+
+        <h3 class="section-title">Feature Variables (x)</h3>
+        <div id="features-wrapper">
+            <div class="row-container">
+                <span style="font-weight: bold; width: 30px;">x1:</span>
+                <input type="text" name="x_name_0" class="input-box name-field" placeholder="Feature Name " required>
+                <input type="text" name="x_values_0" class="input-box val-field" placeholder="Values" required>
+            </div>
+        </div>
+
+        <p><button type="button" onclick="addFeatureRow()">+ Add Another Feature</button></p>
+        <button type="submit" style="background-color: #2563eb; color: white; border: none; padding: 10px 20px;">Calculate</button>
+    </form>
+
+    <script>
+        let featureCount = 1;
+        function addFeatureRow() {
+            const wrapper = document.getElementById('features-wrapper');
+            const newRow = document.createElement('div');
+            newRow.className = 'row-container';
+            newRow.innerHTML = `
+                <span style="font-weight: bold; width: 30px;">x${featureCount + 1}:</span>
+                <input type="text" name="x_name_${featureCount}" class="input-box name-field" placeholder="Feature Name" required>
+                <input type="text" name="x_values_${featureCount}" class="input-box val-field" placeholder="Values" required>
+            `;
+            wrapper.appendChild(newRow);
+            featureCount++;
+        }
+    </script>
+</body>
+</html>
